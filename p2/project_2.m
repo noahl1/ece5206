@@ -1,24 +1,40 @@
 clear all, clc
 
+angle_spacing = 1;
+sample_spacing = 7;
+
+%get the projections matrix
 projs=load('projs.mat');
 projs=projs.p(1:end,1:end-1);
 
-spacing = 1;
-
-%% Apply angle spacing
-t=1; %temp index
-for i = 1:spacing:size(projs,1)    
+%% use angle spacing
+t=1;
+for i = 1:angle_spacing:size(projs,1) 
     temp(t,:) = projs(i,:);
     t = t + 1;
 end
 projs=temp;
-angle = 0:0.8*spacing:179.2;
-angle = angle .*(pi/180);
+
+%create the angle vector
+angles = [0:0.8*angle_spacing:179.2].*(pi/180);
+
+%% use sample spacing
+temp = [];
+t = 1;
+
+for i = 1:sample_spacing:size(projs,2)
+    temp(:,t) = projs(:,i); %use only ith column
+    t= t + 1;
+end
+projs=temp;
+
+%% M x N sinogram
+M = size(projs,1); %rows (# samples)
+N = size(projs,2); %columns (# angles)
 
 %% Ram-Lak filter
-N = length(projs);
 freq = linspace(-1, 1, N);
-RamLak = repmat(abs(freq), [size(projs,1) 1 ]);
+RamLak = repmat(abs(freq), [M 1 ]);
 
 %% Reconstruction
 projs_sh = fftshift(projs,2);
@@ -30,8 +46,8 @@ projs_filt = projs_sh_fft .* fftshift(RamLak); %apply filter
 
 [Wx,Wy] = meshgrid(-N/2:N/2-1, -N/2:N/2-1);
 WxKp = -N/2:N/2-1;
-Wyk =(sin(-angle)).'*WxKp;
-Wxk =(cos(-angle)).'*WxKp;
+Wyk =(sin(-angles)).'*WxKp;
+Wxk =(cos(-angles)).'*WxKp;
 projs_grid = griddata(Wxk,Wyk,projs_filt,Wx,Wy);
 
 %replacing the nans with zeros for IFFT calc
@@ -53,8 +69,7 @@ projs_ifft_sh = fftshift(projs_ifft);
 %mesh(abs(projs_ifft_sh))
 
 % normalize
-projs_norm = abs(projs_ifft_sh) ./ 255;
+projs_norm = abs(projs_ifft_sh) ./ abs(max(max(abs(projs_ifft_sh))));
 
-figure()
 imshow(projs_norm)
 title("Reconstruction of Image with filter")
