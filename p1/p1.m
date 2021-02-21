@@ -120,33 +120,31 @@ clc
 clear all
 close all
 %object domain matrix 2 dimensional: 2^P+1. pad perimeter with 0s
-img = double(rgb2gray(imread('butterfly.jpg')))/255;
+img = abs(double(rgb2gray(imread('head.png')))/255);
 P = 10; N = 2^P;
 img = imresize(img, [N, N]);%Resize
 orig_img = img;%to compare
 imshow(img); figure
 img(end+1, :) = 0; 
 img(:, end+1) = 0;
-phi = linspace(0,180,1000);
+phi = linspace(0,360,1000);
 csa = zeros(length(phi), N);
 %build matrix of central slices at each angle step, each row is new angle
-for p = 1:length(phi)
+for i = 1:length(phi)
+    p = phi(i);
     %imrotate opposite of angle (clockwise)
     rimg = imrotate(img, p, 'bicubic', 'crop');
     %1d fft for each row -> central slice array
     prj = sum(rimg, 1);
     prj = fftshift(prj(1: N));
-    img(:,end) = [];
-    prj = fft(prj, N); 
-    img(:, end+1) = 0;
-    csa(p,:) = fftshift(prj(1:N));
+    csa(i,:) = fftshift(fft(prj,N));
 end
 plot(csa); figure;
 cos_val = cosd(phi);
 sin_val = sin(phi);
-x = (-N / 2: N / 2-1) .* cosd(phi)';
-y = (-N / 2: N / 2-1) .* sind(phi)';
-[x_tgt, y_tgt] = meshgrid(-N / 2: N / 2-1, -N / 2: N / 2-1);
+x = (-N/2: N/2 -1) .* cosd(phi)';
+y = (-N/2: N/2 -1) .* sind(phi)';
+[x_tgt, y_tgt] = meshgrid(-N/2: N/2-1, -N/2: N/2-1);
 img_recon = griddata(x,y,csa,x_tgt,y_tgt);
 %Remove NaN
 nanloc=find(isnan(img_recon));
@@ -158,14 +156,14 @@ img(:, end+1) = 0;
 img_recon=fftshift(img_recon);
 tiledlayout(2,1)
 nexttile
-imshow(orig_img);
+imshow(orig_img,[]);
 title("Original " + N + "x" + N + " Image");
 nexttile
-imshow(img_recon);
+imshow(img_recon,[]);
 title("Reconstructed " + N + "x" + N + " Image");
 
 %RMS_error
-RMS = sqrt(immse(abs(img_recon),orig_img))
+RMS = sqrt(immse(img_recon,orig_img))
 
 
 
