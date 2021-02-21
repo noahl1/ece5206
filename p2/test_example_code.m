@@ -74,7 +74,7 @@ FIL = real(FIL);
 
 % BackI = BackI./m;
 figure
-gg=imshow(BackI);
+gg=imshow(BackI,[]);
 gg=imadjust(gg,[0 1],[1 0],0.1); %flip values of [0 1] to [1 0], gamma=0 to infinite "contrast"
 % imadjust(gg,[0 1],[1 0],0.1)
 % figure,imshow(gg)
