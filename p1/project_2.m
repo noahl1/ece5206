@@ -3,17 +3,29 @@ clc;
 P=load('projs.mat');
 pnew=P.p(1:end,1:end-1);
 angle=0:0.8*(pi/180):179.2*(pi/180);
-
+a=1;
+for i=1:5:size(pnew,1)
+    
+pnewNew(a,:)=pnew(i,:);
+a=a+1;
+end
+pnew=pnewNew;
+angle=0:0.8*(pi/180)*5:179.2*(pi/180);
 %% Ram-Lak filter
 N=length(pnew);
 FreqLength=linspace(-1, 1, N).';
 RamLak=abs( FreqLength' );
+
+% NanL=find(RamLak<0.1);
+% RamLak(NanL)=ones(size(NanL))*.1;
+
+
 RamLak=repmat(RamLak, [size(pnew,1) 1 ]);
 
 %% reconstructing 
 
-SinoNewshift=fftshift(pnew.*fftshift(RamLak),2);%putting the filter in here
-SinoNewshiftFFT=fftshift(fft(SinoNewshift,[],2),2);
+SinoNewshift=fftshift(pnew,2);
+SinoNewshiftFFT=fftshift(fft(SinoNewshift,[],2),2).*fftshift(RamLak);%putting the filter in here
 figure()
 mesh(abs(SinoNewshiftFFT))
 [Wx,Wy]=meshgrid(-length(SinoNewshift)/2:length(SinoNewshift)/2-1, -length(SinoNewshift)/2:length(SinoNewshift)/2-1);
