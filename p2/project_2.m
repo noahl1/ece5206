@@ -1,7 +1,7 @@
 clear all, clc
 
 angle_spacing = 1;
-sample_spacing = 7;
+sample_spacing = 1;
 
 %get the projections matrix
 projs=load('projs.mat');
@@ -10,7 +10,7 @@ projs=projs.p(1:end,1:end-1);
 %% use angle spacing
 t=1;
 for i = 1:angle_spacing:size(projs,1) 
-    temp(t,:) = projs(i,:);
+    temp(t,:) = projs(i,:); %use only ith row
     t = t + 1;
 end
 projs=temp;
